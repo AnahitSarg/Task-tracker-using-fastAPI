@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 import uvicorn
 from schemas import STaskAdd, STask
 
@@ -14,19 +14,19 @@ tasks = []
 async def root():
     return {"me": "Hello World"}
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", response_model=STask)
 async def read_user(task_id: int):
     for task in tasks:
-        if task["task_id"] == task_id:
+        if task["id"] == task_id:
             return task
         
-    return {}
-    # Если не нашли — выдаем ошибку 404
-    #raise HTTPException(status_code=404, detail="Task not found")
-
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Задача с ID {task_id} не найдена"
+    )
 
    
-@app.post("/tasks", response_model=STask)
+@app.post("/tasks", response_model=STask, status_code=status.HTTP_201_CREATED)
 async def create_task(task: STaskAdd):
     # 1. Превращаем Pydantic-модель в словарь
     task_dict = task.model_dump()
