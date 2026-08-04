@@ -8,11 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-fake_tasks_db = [
-    {"task_id": 1, "task_name": "Изучить Python"},
-    {"task_id": 2, "task_name": "Подключить Базу Данных"},
-    {"task_id": 3, "task_name": "Выучить FastAPI"},
-]
+tasks = []
 
 @app.get("/")
 async def root():
@@ -20,7 +16,7 @@ async def root():
 
 @app.get("/tasks/{task_id}")
 async def read_user(task_id: int):
-    for task in fake_tasks_db:
+    for task in tasks:
         if task["task_id"] == task_id:
             return task
         
@@ -28,7 +24,23 @@ async def read_user(task_id: int):
     # Если не нашли — выдаем ошибку 404
     #raise HTTPException(status_code=404, detail="Task not found")
 
-# Добавляем этот блок в конец файла
+
+   
+@app.post("/tasks", response_model=STask)
+async def create_task(task: STaskAdd):
+    # 1. Превращаем Pydantic-модель в словарь
+    task_dict = task.model_dump()
+    
+    # 2. Генерируем ID (длина списка + 1)
+    task_id = len(tasks) + 1
+    task_dict["id"] = task_id
+    
+    # 3. Сохраняем в список
+    tasks.append(task_dict)
+    
+    # 4. Возвращаем словарь. 
+    # FastAPI сам превратит его в схему STask (проверит наличие ID)
+    return task_dict
+
 if __name__ == "__main__":
-    # Обратите внимание: имя файла передается как строка
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
