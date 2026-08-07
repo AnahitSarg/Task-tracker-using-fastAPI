@@ -42,5 +42,20 @@ async def create_task(task: STaskAdd):
     # FastAPI сам превратит его в схему STask (проверит наличие ID)
     return task_dict
 
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(task_id: int):
+    for index, task in enumerate(tasks):
+        if task["id"] == task_id:
+            tasks.pop(index)
+            return
+
+    #Если цикл прошел и ничего не нашли
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Задача не найдена"
+    )
+
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
