@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from schemas import STaskAdd, STask
+from schemas.task import STaskAdd, STask
 
 router = APIRouter(
     #Роутер сам приклеит префикс /tasks ко всем путям внутри себя.

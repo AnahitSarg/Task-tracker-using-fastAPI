@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from router import router as tasks_router
+from routers.task import router as tasks_router
 
 app = FastAPI(
     title="Task Manager APIhjbhjbhj",
