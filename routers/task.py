@@ -1,11 +1,8 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status
 from schemas.task import STaskAdd, STask
 from database import SessionDep 
 
-from typing import Annotated
-from sqlalchemy import select, delete
-from models.tasks import TasksModel
-
+from repository import TaskRepository 
 
 
 router = APIRouter(
@@ -17,20 +14,13 @@ router = APIRouter(
 
 @router.get("")
 async def get_tasks(session: SessionDep):
-    query = select(TasksModel)
-    result = await session.execute(query)
-    return result.scalars().all()
+    tasks = await TaskRepository.find_all(session)
+    return tasks
 
 @router.get("/{task_id}", response_model=STask)
 async def read_user(task_id: int, session: SessionDep):
-    #for task in tasks:
-    #    if task["id"] == task_id:
-    #        return task
-    query = select(TasksModel).where(TasksModel.id == task_id)
-    result = await session.execute(query)
-    task = result.scalar_one_or_none()
-    #кроткий вариант
-    #task = await session.get(TasksModel, task_id)
+    task = await TaskRepository.find_by_id(task_id, session)
+
 
     if task is None:
         raise HTTPException(
@@ -42,44 +32,18 @@ async def read_user(task_id: int, session: SessionDep):
    
 @router.post("", response_model=STask, status_code=status.HTTP_201_CREATED)
 async def create_task(task: STaskAdd, session: SessionDep):
-    # 1. Превращаем Pydantic-модель в словарь
-    #task_dict = task.model_dump()
-    # 2. Генерируем ID (длина списка + 1)
-    #task_id = len(tasks) + 1
-    #task_dict["id"] = task_id
-    # 3. Сохраняем в список
-    #tasks.append(task_dict)
-    # 4. Возвращаем словарь. 
-    # FastAPI сам превратит его в схему STask (проверит наличие ID)
-    #return task_dict
 
-    #1.Превращаем Pydantic-модель в словарь
-    #  ** - это распаковка словаря
-    new_task =TasksModel(**task.model_dump())
-    #2. Добавляем в сессию
-    session.add(new_task)
-    #3. Сохраняем на диск
-    await session.commit()
-    #4. Обновляем объект (получаем выданный ID)
-    await session.refresh(new_task)
-    #5. Возвращаем объект БД. Pydantic сам превратит его в JSON
-    return new_task
+    task_model = await TaskRepository.add_one(task, session)
+    return task_model
 
 
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id: int, session: SessionDep):
-    #for index, task in enumerate(tasks):
-    #    if task["id"] == task_id:
-    #        tasks.pop(index)
-    #        return
-    deleted_task = delete(TasksModel).where(TasksModel.id == task_id)
-    result = await session.execute(deleted_task)
-    await session.commit()
-
+    deleted = await TaskRepository.remove_by_id(task_id, session)
     #Проверяем, был ли удалён хотя бы один ряд
-    if result.rowcount == 0:
+    if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Задача не найдена"
