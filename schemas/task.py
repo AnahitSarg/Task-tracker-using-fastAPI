@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 # 1. Базовый класс (общие поля)
 class STaskBase(BaseModel):
     name: str
     description: str | None = None
+    is_completed: bool = False # Добавили, так как в модели БД оно есть
+
 
 # 2. Класс для создания (ничего не добавляет, просто копирует базу)
 class STaskAdd(STaskBase):
@@ -12,3 +14,6 @@ class STaskAdd(STaskBase):
 # 3. Класс для чтения (добавляет id)
 class STask(STaskBase):
     id: int
+
+    # Включаем поддержку ORM
+    model_config = ConfigDict(from_attributes=True)
