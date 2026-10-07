@@ -73,9 +73,9 @@ http://127.0.0.1:8000/redoc
 
 ## Структура проекта
 
-models/ - модели базы данных
-routers/ - маршруты API
-schemas/ - Pydantic-схемы
-database.py - подключение к базе данных
-repository.py - работа с данными
-main.py - точка входа приложения
+- models/ - модели базы данных
+- routers/ - маршруты API
+- schemas/ - Pydantic-схемы
+- database.py - подключение к базе данных
+- repository.py - работа с данными
+- main.py - точка входа приложения
