@@ -6,17 +6,6 @@ from schemas.task import STaskAdd
 class TaskRepository:
     @classmethod
     async def add_one(cls, data: STaskAdd, session: AsyncSession) -> TasksModel:
-        # 1. Превращаем Pydantic-модель в словарь
-        #task_dict = task.model_dump()
-        # 2. Генерируем ID (длина списка + 1)
-        #task_id = len(tasks) + 1
-        #task_dict["id"] = task_id
-        # 3. Сохраняем в список
-        #tasks.append(task_dict)
-        # 4. Возвращаем словарь. 
-        # FastAPI сам превратит его в схему STask (проверит наличие ID)
-        #return task_dict
-
         #1.Превращаем Pydantic-модель в словарь, создаем объект модели
         #  ** - это распаковка словаря
         new_task =TasksModel(**data.model_dump())
@@ -37,22 +26,13 @@ class TaskRepository:
 
     @classmethod
     async def find_by_id(cls, id: int, session: AsyncSession):
-            #for task in tasks:
-        #    if task["id"] == task_id:
-        #        return task
         query = select(TasksModel).where(TasksModel.id == id)
         result = await session.execute(query)
         task = result.scalar_one_or_none()
-        #кроткий вариант
-        #task = await session.get(TasksModel, task_id) 
         return task   
 
     @classmethod
     async def remove_by_id(cls, id: int, session: AsyncSession):
-        #for index, task in enumerate(tasks):
-        #    if task["id"] == task_id:
-        #        tasks.pop(index)
-        #        return
         deleted_task = delete(TasksModel).where(TasksModel.id == id)
         result = await session.execute(deleted_task)
         await session.commit()

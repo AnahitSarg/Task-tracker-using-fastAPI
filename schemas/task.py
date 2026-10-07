@@ -15,5 +15,4 @@ class STaskAdd(STaskBase):
 class STask(STaskBase):
     id: int
 
-    # Включаем поддержку ORM
     model_config = ConfigDict(from_attributes=True)
